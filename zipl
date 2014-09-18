@@ -1,0 +1,55 @@
+#!/bin/bash
+
+function usage () {
+cat << EOF
+$0:  [OPTIONS] zip ...
+Test and list content of zip files
+  OPTIONS:
+    -h | --help  print this usage information
+    -f           list only file entries
+EOF
+}
+
+function test_zip() {
+    [[ ! -f "$1" ]] && echo "$1 does not exist or it is not a file!" && return 1
+    unzip -t "$1" &>/dev/null || { echo "$1 is not a Zip archive or it is damaged" && return 2; }
+}
+
+function list_zip() {
+    ZIP=$1
+
+    # file entries dose not end with '/'
+    [[ $FILES_ONLY == true ]] && FILTER='!/\/$/ ' 
+    # file entries are in the 4th column
+    CMD=${FILTER}' {print $4}'
+
+    test_zip "$ZIP" && \
+    unzip -qql "$ZIP" | awk "$CMD"
+}
+
+function list_zip_files() {
+    ZIP=$1
+    list_zip "$ZIP" | awk '!/\/$/ {print $NF}'
+}
+
+
+if [[ $1 == -h || $1 == --help ]]; then
+    usage
+    exit 1
+else 
+    [[ $1 == -f ]] && FILES_ONLY=true && shift
+
+    # if no files supplied read from stdin
+    if [[ $# == 0 ]]; then
+        while read -r fn; do
+            # this is to remove the special chars that
+            # might be introduced by ls -F
+            fn=`echo $fn`
+            list_zip "$fn"
+        done
+    else
+        for fn in "$@"; do
+            list_zip "$fn"
+        done
+    fi
+fi
