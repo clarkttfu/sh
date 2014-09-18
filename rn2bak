@@ -40,7 +40,6 @@ else
     for fn in "$@"; do
         [[ ! -f $fn && ! -d $fn ]] && echo $fn dose not exist!
         backup "$fn" || echo Failed to backup $fn!
-        #[[ -d $fn ]] && backup_dir "$fn" || echo Failed to backup $fn!
     done
 fi
     
