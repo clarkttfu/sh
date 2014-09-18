@@ -1,0 +1,6 @@
+#!/bin/bash
+
+for zip in "$@"; do
+    BNAME=$(basename $zip)
+    echo ${BNAME%.*}
+done
