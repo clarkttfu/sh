@@ -1,0 +1,47 @@
+#!/bin/bash
+CWD=$(cd "$(dirname "")"; pwd)
+DIR="$(cd "$( dirname "${BASH_SOURCE[0]}")" && pwd )"
+MYSELF=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename ${BASH_SOURCE[0]})
+
+function usage () {
+cat << EOF
+$0:  [OPTIONS] file|folder ...
+Rename (as backup) the specified files or folders in place
+by appending timestamp "+%Y%M%d_%H%M" to end of name. Append
+numbered suffix if the timestamp name already exists
+
+  OPTIONS:
+    -h | --help     print this usage information
+EOF
+}
+
+function possible_name() {
+    ORG_NAME=$1
+    NUM=1
+    TIME_NAME=${ORG_NAME}_$(date +%Y%M%d_%H%M)
+    NEW_NAME=${TIME_NAME}
+    while [[ -d $NEW_NAME || -f $NEW_NAME ]]; do
+        NEW_NAME=${TIME_NAME}.${NUM}
+        let NUM=NUM+1
+    done
+    echo $NEW_NAME
+}
+
+function backup() {
+    ORG_NAME=$1
+    NEW_NAME=`possible_name $ORG_NAME`
+    mv "$ORG_NAME" "$NEW_NAME"
+}
+
+if [[ -z $1 || $1 == -h || $1 == --help ]]; then
+    usage
+    exit 1
+else 
+    for fn in "$@"; do
+        [[ ! -f $fn && ! -d $fn ]] && echo $fn dose not exist!
+        backup "$fn" || echo Failed to backup $fn!
+        #[[ -d $fn ]] && backup_dir "$fn" || echo Failed to backup $fn!
+    done
+fi
+    
+
