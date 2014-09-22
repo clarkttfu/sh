@@ -1,13 +1,10 @@
 #!/bin/bash
 
-if [[ -z $1 ]]; then
-    IND=2
-elif [[ ! $1 =~ ^[0-9]+$ ]]; then
-    IND=0
+if [[ -z $1 || $1 == 0 ]]; then
+    tee
+elif [[ $1 =~ ^[0-9]+$ && $1 > 0 ]]; then
+    SPACES=`printf '%'$1's'`
+    sed 's/^/'"$SPACES"'/g'
 else
-    IND=$1
+    sed 's/^/'"$1"'/g'
 fi
-
-SPACES=`printf '%'$IND's'`
-
-sed 's/^/'"$SPACES"'/g'
